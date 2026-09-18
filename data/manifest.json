@@ -1,11 +1,410 @@
 {
   "app": "CAU-CLST-Activity-Log",
   "schema": 3,
-  "revision": "0",
-  "createdAt": "2026-09-18T14:29:51.346Z",
-  "records": [],
+  "revision": "49",
+  "createdAt": "2026-09-18T16:56:56.803Z",
+  "records": [
+    {
+      "seq": "44",
+      "record_id": "preserved-v1-activity-0",
+      "kind": "record",
+      "payload": {
+        "id": "preserved-v1-activity-0",
+        "date": "2026-09-16",
+        "time": "14:30",
+        "work": "负责活动方案策划、迎新物料准备与现场统筹；完成签到引导、照片整理及活动总结。",
+        "notes": "【虚构示例】用于展示界面与图片效果，不代表真实部门活动。管理员可删除；删除后不会自动补回。\n把第一次见面的拘谨，变成一起做事的默契。",
+        "title": "秋日迎新 · 从相遇开始",
+        "people": [
+          "林宁",
+          "陈禾",
+          "周予"
+        ],
+        "starred": true,
+        "category": "部门工作",
+        "location": "学生活动中心",
+        "createdAt": "2026-09-18T16:43:47.268Z",
+        "updatedAt": "2026-09-18T16:43:47.268Z",
+        "attachments": [
+          {
+            "id": "preserved-v1-sample-0-0",
+            "name": "活动主视觉 · 示意.svg",
+            "size": 1777,
+            "type": "image/svg+xml"
+          },
+          {
+            "id": "preserved-v1-sample-0-1",
+            "name": "现场片刻 · 示意.svg",
+            "size": 1782,
+            "type": "image/svg+xml"
+          },
+          {
+            "id": "preserved-v1-sample-0-2",
+            "name": "活动回顾 · 示意.svg",
+            "size": 1787,
+            "type": "image/svg+xml"
+          },
+          {
+            "id": "preserved-v1-sample-0-3",
+            "name": "合影留念 · 示意.svg",
+            "size": 1785,
+            "type": "image/svg+xml"
+          },
+          {
+            "id": "preserved-v1-sample-note",
+            "name": "活动复盘提纲 · 示例.txt",
+            "size": 183,
+            "type": "text/plain"
+          }
+        ],
+        "importFingerprint": "builtin-demo-v1-0"
+      },
+      "revision": 1,
+      "deleted": false,
+      "operation": "import",
+      "created_at": "2026-09-18 16:43:47.23733+00"
+    },
+    {
+      "seq": "45",
+      "record_id": "preserved-v1-activity-1",
+      "kind": "record",
+      "payload": {
+        "id": "preserved-v1-activity-1",
+        "date": "2026-09-12",
+        "time": "",
+        "work": "整理培训资料，协助嘉宾对接与会务准备；记录小组讨论成果，收集活动反馈。",
+        "notes": "【虚构示例】用于展示界面与图片效果，不代表真实部门活动。管理员可删除；删除后不会自动补回。",
+        "title": "新学期工作坊：把想法变成行动",
+        "people": [
+          "林宁",
+          "许安"
+        ],
+        "starred": false,
+        "category": "会议培训",
+        "location": "综合楼 302",
+        "createdAt": "2026-09-18T16:43:47.294Z",
+        "updatedAt": "2026-09-18T16:43:47.294Z",
+        "attachments": [
+          {
+            "id": "preserved-v1-sample-1-0",
+            "name": "活动主视觉 · 示意.svg",
+            "size": 1782,
+            "type": "image/svg+xml"
+          },
+          {
+            "id": "preserved-v1-sample-1-1",
+            "name": "现场片刻 · 示意.svg",
+            "size": 1787,
+            "type": "image/svg+xml"
+          }
+        ],
+        "importFingerprint": "builtin-demo-v1-1"
+      },
+      "revision": 1,
+      "deleted": false,
+      "operation": "import",
+      "created_at": "2026-09-18 16:43:47.23733+00"
+    },
+    {
+      "seq": "46",
+      "record_id": "preserved-v1-activity-2",
+      "kind": "record",
+      "payload": {
+        "id": "preserved-v1-activity-2",
+        "date": "2026-09-08",
+        "time": "",
+        "work": "参与志愿者排班与点位协调，负责物资清点、现场秩序维护和活动影像记录。",
+        "notes": "【虚构示例】用于展示界面与图片效果，不代表真实部门活动。管理员可删除；删除后不会自动补回。",
+        "title": "校园志愿行动 · 让温暖发生",
+        "people": [
+          "陈禾",
+          "周予",
+          "沈言"
+        ],
+        "starred": true,
+        "category": "志愿服务",
+        "location": "校园公共空间",
+        "createdAt": "2026-09-18T16:43:47.312Z",
+        "updatedAt": "2026-09-18T16:43:47.312Z",
+        "attachments": [
+          {
+            "id": "preserved-v1-sample-2-0",
+            "name": "活动主视觉 · 示意.svg",
+            "size": 1787,
+            "type": "image/svg+xml"
+          },
+          {
+            "id": "preserved-v1-sample-2-1",
+            "name": "现场片刻 · 示意.svg",
+            "size": 1785,
+            "type": "image/svg+xml"
+          },
+          {
+            "id": "preserved-v1-sample-2-2",
+            "name": "活动回顾 · 示意.svg",
+            "size": 1777,
+            "type": "image/svg+xml"
+          }
+        ],
+        "importFingerprint": "builtin-demo-v1-2"
+      },
+      "revision": 1,
+      "deleted": false,
+      "operation": "import",
+      "created_at": "2026-09-18 16:43:47.23733+00"
+    },
+    {
+      "seq": "47",
+      "record_id": "preserved-v1-activity-3",
+      "kind": "record",
+      "payload": {
+        "id": "preserved-v1-activity-3",
+        "date": "2026-09-03",
+        "time": "",
+        "work": "汇总报名名单，设计讨论提纲；负责主持串场、计时提醒和分享内容整理。",
+        "notes": "【虚构示例】用于展示界面与图片效果，不代表真实部门活动。管理员可删除；删除后不会自动补回。",
+        "title": "午后分享会：好方法，一起聊",
+        "people": [
+          "许安",
+          "沈言"
+        ],
+        "starred": false,
+        "category": "交流分享",
+        "location": "研讨室 B",
+        "createdAt": "2026-09-18T16:43:47.325Z",
+        "updatedAt": "2026-09-18T16:43:47.325Z",
+        "attachments": [
+          {
+            "id": "preserved-v1-sample-3-0",
+            "name": "活动主视觉 · 示意.svg",
+            "size": 1785,
+            "type": "image/svg+xml"
+          },
+          {
+            "id": "preserved-v1-sample-3-1",
+            "name": "现场片刻 · 示意.svg",
+            "size": 1777,
+            "type": "image/svg+xml"
+          }
+        ],
+        "importFingerprint": "builtin-demo-v1-3"
+      },
+      "revision": 1,
+      "deleted": false,
+      "operation": "import",
+      "created_at": "2026-09-18 16:43:47.23733+00"
+    },
+    {
+      "seq": "48",
+      "record_id": "preserved-v1-activity-4",
+      "kind": "record",
+      "payload": {
+        "id": "preserved-v1-activity-4",
+        "date": "2026-08-28",
+        "time": "",
+        "work": "参与活动流程设计、场地布置及互动环节组织；整理成员建议与后续分工。",
+        "notes": "【虚构示例】用于展示界面与图片效果，不代表真实部门活动。管理员可删除；删除后不会自动补回。",
+        "title": "夏末相聚 · 部门交流日",
+        "people": [
+          "林宁",
+          "陈禾",
+          "沈言"
+        ],
+        "starred": false,
+        "category": "文体活动",
+        "location": "多功能活动室",
+        "createdAt": "2026-09-18T16:43:47.336Z",
+        "updatedAt": "2026-09-18T16:43:47.336Z",
+        "attachments": [
+          {
+            "id": "preserved-v1-sample-4-0",
+            "name": "活动主视觉 · 示意.svg",
+            "size": 1777,
+            "type": "image/svg+xml"
+          }
+        ],
+        "importFingerprint": "builtin-demo-v1-4"
+      },
+      "revision": 1,
+      "deleted": false,
+      "operation": "import",
+      "created_at": "2026-09-18 16:43:47.23733+00"
+    },
+    {
+      "seq": "49",
+      "record_id": "preserved-v1-activity-5",
+      "kind": "record",
+      "payload": {
+        "id": "preserved-v1-activity-5",
+        "date": "2026-08-22",
+        "time": "",
+        "work": "梳理阶段工作进度，核对活动记录与附件；协助完成资料分类、命名和归档。",
+        "notes": "【虚构示例】用于展示界面与图片效果，不代表真实部门活动。管理员可删除；删除后不会自动补回。",
+        "title": "暑期工作复盘与资料归档",
+        "people": [
+          "周予",
+          "许安"
+        ],
+        "starred": false,
+        "category": "部门工作",
+        "location": "线上会议",
+        "createdAt": "2026-09-18T16:43:47.346Z",
+        "updatedAt": "2026-09-18T16:43:47.346Z",
+        "attachments": [],
+        "importFingerprint": "builtin-demo-v1-5"
+      },
+      "revision": 1,
+      "deleted": false,
+      "operation": "import",
+      "created_at": "2026-09-18 16:43:47.23733+00"
+    }
+  ],
   "drafts": [],
-  "trash": [],
-  "files": [],
-  "historyCount": 0
+  "trash": [
+    {
+      "seq": "43",
+      "record_id": "a4afcf2d-0343-469e-bf6b-77fbde4b52d2",
+      "kind": "draft",
+      "payload": {
+        "id": "a4afcf2d-0343-469e-bf6b-77fbde4b52d2",
+        "date": "2026-09-19",
+        "time": "",
+        "work": "",
+        "notes": "",
+        "title": "",
+        "editor": {
+          "editing": null,
+          "removed": []
+        },
+        "fields": {
+          "date": "2026-09-19",
+          "time": "",
+          "work": "",
+          "notes": "",
+          "title": "",
+          "people": "",
+          "category": "其他",
+          "location": ""
+        },
+        "people": [],
+        "starred": false,
+        "category": "其他",
+        "location": "",
+        "createdAt": "2026-09-18T16:07:50.423Z",
+        "updatedAt": "2026-09-18T16:07:52.861Z",
+        "attachments": []
+      },
+      "revision": 3,
+      "deleted": true,
+      "operation": "discardDraft",
+      "created_at": "2026-09-18 16:08:05.379114+00"
+    }
+  ],
+  "files": [
+    {
+      "id": "preserved-v1-sample-0-0",
+      "name": "活动主视觉 · 示意.svg",
+      "type": "image/svg+xml",
+      "size": 1777,
+      "digest": "2e50cfd5ba4e4d07302a7fc8ecf10c18c946954bc1f432af144168de344025be",
+      "path": "attachments/preserved-v1-sample-0-0.bin"
+    },
+    {
+      "id": "preserved-v1-sample-0-1",
+      "name": "现场片刻 · 示意.svg",
+      "type": "image/svg+xml",
+      "size": 1782,
+      "digest": "46b6de8ed2262cb01078afa40a14522094cf26a0d5ccfd6056cb218d088adf88",
+      "path": "attachments/preserved-v1-sample-0-1.bin"
+    },
+    {
+      "id": "preserved-v1-sample-0-2",
+      "name": "活动回顾 · 示意.svg",
+      "type": "image/svg+xml",
+      "size": 1787,
+      "digest": "153b07138be7ad685de1cfc0d139d7c7b2fe7f19c147755e87581c4d2731f494",
+      "path": "attachments/preserved-v1-sample-0-2.bin"
+    },
+    {
+      "id": "preserved-v1-sample-0-3",
+      "name": "合影留念 · 示意.svg",
+      "type": "image/svg+xml",
+      "size": 1785,
+      "digest": "894f2c343648e9f4134742241ee01368c2da61aef8004aa021695edd8b188042",
+      "path": "attachments/preserved-v1-sample-0-3.bin"
+    },
+    {
+      "id": "preserved-v1-sample-1-0",
+      "name": "活动主视觉 · 示意.svg",
+      "type": "image/svg+xml",
+      "size": 1782,
+      "digest": "46b6de8ed2262cb01078afa40a14522094cf26a0d5ccfd6056cb218d088adf88",
+      "path": "attachments/preserved-v1-sample-1-0.bin"
+    },
+    {
+      "id": "preserved-v1-sample-1-1",
+      "name": "现场片刻 · 示意.svg",
+      "type": "image/svg+xml",
+      "size": 1787,
+      "digest": "153b07138be7ad685de1cfc0d139d7c7b2fe7f19c147755e87581c4d2731f494",
+      "path": "attachments/preserved-v1-sample-1-1.bin"
+    },
+    {
+      "id": "preserved-v1-sample-2-0",
+      "name": "活动主视觉 · 示意.svg",
+      "type": "image/svg+xml",
+      "size": 1787,
+      "digest": "153b07138be7ad685de1cfc0d139d7c7b2fe7f19c147755e87581c4d2731f494",
+      "path": "attachments/preserved-v1-sample-2-0.bin"
+    },
+    {
+      "id": "preserved-v1-sample-2-1",
+      "name": "现场片刻 · 示意.svg",
+      "type": "image/svg+xml",
+      "size": 1785,
+      "digest": "894f2c343648e9f4134742241ee01368c2da61aef8004aa021695edd8b188042",
+      "path": "attachments/preserved-v1-sample-2-1.bin"
+    },
+    {
+      "id": "preserved-v1-sample-2-2",
+      "name": "活动回顾 · 示意.svg",
+      "type": "image/svg+xml",
+      "size": 1777,
+      "digest": "2e50cfd5ba4e4d07302a7fc8ecf10c18c946954bc1f432af144168de344025be",
+      "path": "attachments/preserved-v1-sample-2-2.bin"
+    },
+    {
+      "id": "preserved-v1-sample-3-0",
+      "name": "活动主视觉 · 示意.svg",
+      "type": "image/svg+xml",
+      "size": 1785,
+      "digest": "894f2c343648e9f4134742241ee01368c2da61aef8004aa021695edd8b188042",
+      "path": "attachments/preserved-v1-sample-3-0.bin"
+    },
+    {
+      "id": "preserved-v1-sample-3-1",
+      "name": "现场片刻 · 示意.svg",
+      "type": "image/svg+xml",
+      "size": 1777,
+      "digest": "2e50cfd5ba4e4d07302a7fc8ecf10c18c946954bc1f432af144168de344025be",
+      "path": "attachments/preserved-v1-sample-3-1.bin"
+    },
+    {
+      "id": "preserved-v1-sample-4-0",
+      "name": "活动主视觉 · 示意.svg",
+      "type": "image/svg+xml",
+      "size": 1777,
+      "digest": "2e50cfd5ba4e4d07302a7fc8ecf10c18c946954bc1f432af144168de344025be",
+      "path": "attachments/preserved-v1-sample-4-0.bin"
+    },
+    {
+      "id": "preserved-v1-sample-note",
+      "name": "活动复盘提纲 · 示例.txt",
+      "type": "text/plain",
+      "size": 183,
+      "digest": "18d5a7f5072be0f820c318a021e8df70553bacf6498aeb9ca665482ad31517e4",
+      "path": "attachments/preserved-v1-sample-note.bin"
+    }
+  ],
+  "historyCount": 9
 }
