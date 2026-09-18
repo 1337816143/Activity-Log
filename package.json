@@ -1,12 +1,1 @@
-{
-  "name": "activity-log",
-  "version": "1.0.0",
-  "private": true,
-  "type": "module",
-  "description": "Local-first department activity journal with a glass UI and spring photo deck",
-  "scripts": {
-    "check": "node --check assets/app.js && node --check assets/store.js && node --check assets/deck.js && node --check assets/ui.js && node --check assets/demo.js",
-    "serve": "python3 -m http.server 8765",
-    "test": "python3 tests/e2e.py"
-  }
-}
+{"name":"cau-clst-activity-log","version":"2.1.0","private":true,"type":"module","scripts":{"check":"node --check assets/app.js && node --check assets/team-client.js && node --check assets/team-ui.js && node --check assets/store.js && node --check assets/excel-core.js && node --check assets/excel-worker.js","test":"node --test tests/core.test.mjs","serve":"python3 -m http.server 8765"}}
