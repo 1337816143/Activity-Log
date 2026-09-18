@@ -4,7 +4,9 @@
     {
       "path": "assets/identity/clst-official-header.png",
       "source": "https://clst.cau.edu.cn/images/4262/logo.png",
-      "sha256": "6fb72e47c16f35592c913006b9ad1bea71bcc013ab9a801a3d8d8a8536e86ab6"
+      "sha256": "6fb72e47c16f35592c913006b9ad1bea71bcc013ab9a801a3d8d8a8536e86ab6",
+      "displayed": false,
+      "note": "已停用：用户指出此图片并非所需学院 logo；不在界面展示。"
     },
     {
       "path": "assets/identity/cau-emblem.png",
@@ -20,6 +22,13 @@
       "path": "assets/vendor/SheetJS-LICENSE.txt",
       "source": "https://cdn.sheetjs.com/xlsx-0.20.3/package/LICENSE",
       "sha256": "4d2a38ac35cda06a555c84074a819d413339cd3691b822cae50f8f322fe01f64"
+    },
+    {
+      "path": "assets/identity/cau-emblem-transparent.png",
+      "derivedFrom": "assets/identity/cau-emblem.png",
+      "method": "scripts/prepare-emblem.py: remove white matte and retain original proportions; no redrawing",
+      "source": "https://www2023.cau.edu.cn/images/1182/xiaohui.png"
     }
-  ]
+  ],
+  "presentationPolicy": "仅展示已核实的中国农业大学校徽；停用此前的学院官网组合图，不以其冒充院徽。"
 }
