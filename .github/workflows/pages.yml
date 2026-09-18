@@ -2,6 +2,8 @@ name: Verify and publish Activity Log
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'docs/**'
   workflow_dispatch:
 permissions:
   contents: read
@@ -13,7 +15,7 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -22,13 +24,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Check JavaScript syntax
-        run: npm run check
+      - name: Syntax and spreadsheet parser unit tests
+        run: npm run check && npm test
       - name: Install browser test tooling
         run: |
           pip install playwright
           python -m playwright install --with-deps chromium
-      - name: Test the real app and IndexedDB
+      - name: Verify anonymous sharing in isolated QA namespace
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/activity-http.log 2>&1 &
           sleep 2
@@ -40,23 +42,20 @@ jobs:
           name: browser-test-results
           path: test-results/
           retention-days: 14
-      - name: Prepare static site
+      - name: Prepare static site without data or credentials
         run: |
           mkdir -p _site
           cp index.html _site/
           cp -r assets _site/
           touch _site/.nojekyll
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v5
-        with:
-          enablement: true
+      - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
   deploy:
     needs: verify
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -72,22 +71,17 @@ jobs:
         run: |
           pip install playwright
           python -m playwright install --with-deps chromium
-      - name: Verify public HTTP and all primary static resources
+      - name: Verify public HTTP and static resources
         env:
           LIVE_URL: ${{ steps.deployment.outputs.page_url }}
         run: |
           mkdir -p test-results-live
-          test -n "$LIVE_URL"
-          curl --fail --location --retry 8 --retry-all-errors --retry-delay 5 --max-time 25 \
-            --dump-header test-results-live/http-headers.txt \
-            --output test-results-live/index.html \
-            --write-out '%{http_code}\n%{url_effective}\n' "$LIVE_URL" | tee test-results-live/http-status.txt
-          grep -q 'assets/app.js' test-results-live/index.html
-          for asset in app.js store.js deck.js ui.js demo.js style.css base.css workspace.css dialogs.css responsive.css icon.svg; do
-            curl --fail --silent --show-error --location --retry 3 --retry-delay 2 --max-time 25 \
-              --output /dev/null --write-out "$asset %{http_code}\n" "${LIVE_URL%/}/assets/$asset"
+          curl --fail --location --retry 8 --retry-all-errors --retry-delay 5 --max-time 25 --dump-header test-results-live/http-headers.txt --output test-results-live/index.html "$LIVE_URL"
+          grep -q 'v2.1.0' test-results-live/index.html
+          for asset in app.js store.js deck.js ui.js demo.js style.css base.css workspace.css dialogs.css responsive.css team-client.js team-ui.js drafts.js config.js excel-worker.js excel-core.js team.css identity/cau-emblem.png identity/clst-official-header.png vendor/xlsx.full.min.js; do
+            curl --fail --silent --show-error --location --retry 3 --retry-delay 2 --max-time 25 --output /dev/null --write-out "$asset %{http_code}\n" "${LIVE_URL%/}/assets/$asset"
           done | tee test-results-live/static-resources.txt
-      - name: Run all browser tests against the public site
+      - name: Verify the live shared website using two independent browsers
         env:
           LIVE_URL: ${{ steps.deployment.outputs.page_url }}
           TEST_RESULTS: test-results-live

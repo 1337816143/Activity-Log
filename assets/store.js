@@ -1,3 +1,4 @@
+import {team} from './team-client.js?v=2.1.0';
 /** Local-first transactional storage. Original attachments are kept as Blobs, never localStorage/base64. */
 const DB_NAME = 'activity-log-v1';
 let connection;
@@ -26,8 +27,10 @@ async function read(store, key) {
     req.onsuccess = () => resolve(req.result); req.onerror = () => reject(req.error);
   });
 }
-export const allRecords = () => read('records');
-export const getFile = id => read('files', id);
+export const localRecords = () => read('records');
+export const allRecords = () => team.connected ? team.listRecords() : localRecords();
+export const localFile = id => read('files', id);
+export const getFile = (id,thumb=false) => team.connected ? team.getFile(id,thumb) : localFile(id);
 async function transaction(fn) {
   const db = await openDB();
   return new Promise((resolve, reject) => {
@@ -37,11 +40,13 @@ async function transaction(fn) {
     try { fn(tx.objectStore('records'), tx.objectStore('files')); } catch (e) { tx.abort(); reject(e); }
   });
 }
-export async function saveRecord(record, files = [], removed = []) {
-  await transaction((r, f) => { r.put(record); files.forEach(file => f.put(file)); removed.forEach(id => f.delete(id)); });
+export async function saveRecord(record, files = [], removed = [], options = {}) {
+  if(!team.connected)throw new Error('共享服务尚未连接；请保留本机草稿后重试。');
+  return team.saveRecord(record,files,removed,options);
 }
-export async function deleteRecord(record) {
-  await transaction((r, f) => { r.delete(record.id); record.attachments.forEach(a => f.delete(a.id)); });
+export async function deleteRecord(record,password) {
+  if(!team.connected)throw new Error('共享服务尚未连接，未执行删除。');
+  return team.deleteRecord(record,password);
 }
 export function isImage(a) { return /^image\//.test(a.type) || /\.(png|jpe?g|gif|webp|avif|bmp)$/i.test(a.name); }
 export function mimeFor(file) {
@@ -79,7 +84,7 @@ export function validateRecord(r) {
   const str = (x, max) => typeof x === 'string' && x.length <= max;
   if (!r || !str(r.id, 100) || !r.id || !str(r.title,120) || !r.title.trim() || !str(r.work,10000) || !r.work.trim() || !/^\d{4}-\d{2}-\d{2}$/.test(r.date) || !Number.isFinite(Date.parse(r.date)) || new Date(r.date).toISOString().slice(0,10) !== r.date || !Array.isArray(r.people) || !r.people.length || r.people.length > 100 || !r.people.every(p => str(p,100) && p.trim()) || !Array.isArray(r.attachments) || r.attachments.length > 100) throw new Error('备份记录结构无效或字段超限，未导入任何数据。');
   for (const a of r.attachments) if (!a || !str(a.id,100) || !a.id || !str(a.name,255) || !a.name || !str(a.type,150) || !Number.isSafeInteger(a.size) || a.size < 0 || a.size > MAX_FILE) throw new Error('备份附件信息无效。');
-  return { id:r.id, title:r.title, work:r.work, date:r.date, people:[...new Set(r.people)], attachments:r.attachments.map(metadata), time:/^\d{2}:\d{2}$/.test(r.time) ? r.time : '', category:str(r.category,50) ? r.category : '其他', location:str(r.location,200) ? r.location : '', notes:str(r.notes,10000) ? r.notes : '', starred:r.starred === true, createdAt:str(r.createdAt,40) ? r.createdAt : new Date().toISOString(), updatedAt:str(r.updatedAt,40) ? r.updatedAt : new Date().toISOString() };
+  return { id:r.id, title:r.title, work:r.work, date:r.date, people:[...new Set(r.people)], attachments:r.attachments.map(metadata), time:/^\d{2}:\d{2}$/.test(r.time) ? r.time : '', category:str(r.category,50) ? r.category : '其他', location:str(r.location,200) ? r.location : '', notes:str(r.notes,10000) ? r.notes : '', starred:r.starred === true, createdAt:str(r.createdAt,40) ? r.createdAt : new Date().toISOString(), updatedAt:str(r.updatedAt,40) ? r.updatedAt : new Date().toISOString(), ...(typeof r.importFingerprint==='string'?{importFingerprint:r.importFingerprint}:{}) };
 }
 export async function importBackup(payload) {
   if (!payload || payload.app !== 'Activity-Log' || payload.version !== 1 || !Array.isArray(payload.records) || payload.records.length > 10000 || !Array.isArray(payload.files) || payload.files.length > 20000) throw new Error('不是有效的 Activity Log 完整备份文件。');
@@ -101,6 +106,7 @@ export async function importBackup(payload) {
     }
   }
   // Merge as independent copies: never overwrite existing records or attachments.
-  await transaction((rs, fs) => { records.forEach(r => rs.put(r)); restored.forEach(f => fs.put(f)); });
+  if(!team.connected)throw new Error('共享服务尚未连接，未导入任何记录。');
+  await team.importRecords(records,restored);
   return records.length;
 }

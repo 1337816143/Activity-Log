@@ -1,0 +1,69 @@
+name: Verify anonymous shared Activity Log
+on:
+  push:
+    branches: [feature/team-v2]
+    paths:
+      - '.github/workflows/anonymous-v2-build.yml'
+      - 'assets/**'
+      - 'tests/**'
+      - 'index.html'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: activity-log-v2-verify
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/team-v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Import the verified source package once
+        run: |
+          if test ! -f assets/config.js; then
+            curl -fL --retry 3 'https://cau-clst-activity-log.floot.app/_cdn/static/bde8f66a-3429-4aef-969b-1635effa965f-activity-log-anonymous-v2.1.0.zip' -o /tmp/source.zip
+            echo '93b9890d6d0e6d52651f47378eddd242929fa8caf1a03fb85fbef7dfd95a527f  /tmp/source.zip' | sha256sum -c -
+            python3 - <<'PY'
+          import zipfile,pathlib
+          with zipfile.ZipFile('/tmp/source.zip') as z:
+            for item in z.infolist():
+              p=pathlib.PurePosixPath(item.filename)
+              if p.is_absolute() or '..' in p.parts or p.parts[0] not in ('assets','tests','scripts','index.html','README.md','package.json'):raise RuntimeError('Unexpected archive path')
+              if item.file_size>3000000:raise RuntimeError('Unexpected source size')
+            z.extractall('.')
+          PY
+            npm run check
+            npm test
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add assets tests scripts index.html README.md package.json
+            git commit -m 'feat: anonymous team sharing, drafts, protected recycle bin, Excel import and scheduled GitHub archive'
+            git push origin HEAD:feature/team-v2
+          fi
+      - name: Syntax and parser unit tests
+        run: npm run check && npm test
+      - name: Install Chromium test tooling
+        run: |
+          pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Browser tests against the real shared API
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/activity-http.log 2>&1 &
+          sleep 2
+          python3 tests/e2e.py http://127.0.0.1:8765/
+      - name: Save browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: anonymous-team-browser-evidence
+          path: test-results/
+          retention-days: 14

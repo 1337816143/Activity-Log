@@ -1,0 +1,53 @@
+name: Collect official assets and source snapshot
+on:
+  push:
+    branches: [feature/team-v2]
+    paths: [.github/workflows/collect-assets.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/team-v2
+      - name: Download authoritative identity and parser resources
+        run: |
+          mkdir -p assets/identity assets/vendor
+          curl --fail --retry 3 --max-time 120 -L 'https://clst.cau.edu.cn/images/4262/logo.png' -o assets/identity/clst-official-header.png
+          curl --fail --retry 3 --max-time 120 -L 'https://www2023.cau.edu.cn/images/1182/xiaohui.png' -o assets/identity/cau-emblem.png
+          curl --fail --retry 3 --max-time 120 -L 'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js' -o assets/vendor/xlsx.full.min.js
+          curl --fail --retry 3 --max-time 120 -L 'https://cdn.sheetjs.com/xlsx-0.20.3/package/LICENSE' -o assets/vendor/SheetJS-LICENSE.txt
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib,json
+          for name in ['clst-official-header','cau-emblem']:
+              p=Path(f'assets/identity/{name}.png');assert p.read_bytes().startswith(b'\x89PNG\r\n\x1a\n'),name
+          p=Path('assets/vendor/xlsx.full.min.js');assert p.stat().st_size>500000
+          sources={
+            'assets/identity/clst-official-header.png':'https://clst.cau.edu.cn/images/4262/logo.png',
+            'assets/identity/cau-emblem.png':'https://www2023.cau.edu.cn/images/1182/xiaohui.png',
+            'assets/vendor/xlsx.full.min.js':'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js',
+            'assets/vendor/SheetJS-LICENSE.txt':'https://cdn.sheetjs.com/xlsx-0.20.3/package/LICENSE'
+          }
+          Path('assets/identity/sources.json').write_text(json.dumps({'collectedAt':'2026-09-18','assets':[{'path':p,'source':u,'sha256':hashlib.sha256(Path(p).read_bytes()).hexdigest()} for p,u in sources.items()]},ensure_ascii=False,indent=2))
+          PY
+      - name: Commit vendored assets
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/identity assets/vendor
+          git diff --cached --quiet || git commit -m 'assets: vendor CAU official marks and SheetJS CE 0.20.3'
+          git push origin HEAD:feature/team-v2
+      - uses: actions/upload-artifact@v4
+        with:
+          name: activity-log-v2-source
+          path: |
+            assets/
+            index.html
+            package.json
+            tests/
+            README.md
+          retention-days: 3

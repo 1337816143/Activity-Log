@@ -1,5 +1,7 @@
 /* Layered glass design: foundations, workspace, dialogs and responsive themes. */
-@import url("./base.css");
-@import url("./workspace.css");
-@import url("./dialogs.css");
-@import url("./responsive.css");
+@import url("./base.css?v=2.1.0");
+@import url("./workspace.css?v=2.1.0");
+@import url("./dialogs.css?v=2.1.0");
+@import url("./responsive.css?v=2.1.0");
+
+@import url("./team.css?v=2.1.0");
