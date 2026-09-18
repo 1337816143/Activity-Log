@@ -1,0 +1,25 @@
+{
+  "collectedAt": "2026-09-18",
+  "assets": [
+    {
+      "path": "assets/identity/clst-official-header.png",
+      "source": "https://clst.cau.edu.cn/images/4262/logo.png",
+      "sha256": "6fb72e47c16f35592c913006b9ad1bea71bcc013ab9a801a3d8d8a8536e86ab6"
+    },
+    {
+      "path": "assets/identity/cau-emblem.png",
+      "source": "https://www2023.cau.edu.cn/images/1182/xiaohui.png",
+      "sha256": "957752bcd9ae63b89109a24162e1fb75ab6538a1bbdd079ae8443b08764d1885"
+    },
+    {
+      "path": "assets/vendor/xlsx.full.min.js",
+      "source": "https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js",
+      "sha256": "cc015130aa8521e7f088f88898eba949ccdcbfb38df0bd129b44b7273c3a6f41"
+    },
+    {
+      "path": "assets/vendor/SheetJS-LICENSE.txt",
+      "source": "https://cdn.sheetjs.com/xlsx-0.20.3/package/LICENSE",
+      "sha256": "4d2a38ac35cda06a555c84074a819d413339cd3691b822cae50f8f322fe01f64"
+    }
+  ]
+}
