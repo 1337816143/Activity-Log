@@ -1,0 +1,37 @@
+/* The v1 glass/card/deck rules remain unchanged. Workspace is the retained v2.1 presentation. */
+.brand-symbol,.brand-symbol:hover{background:transparent!important;border:0;box-shadow:none;padding:0;border-radius:0}
+.brand-symbol img,.school-emblem,.footer-seal,.institution-strip img{background:transparent;border:0;box-shadow:none;object-fit:contain}
+.identity-pair{flex-direction:row}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+#ui-toggle{color:var(--purple);position:relative}
+#ui-toggle .icon{width:19px;height:19px;transition:transform .32s var(--ease)}
+#ui-toggle[aria-pressed=true] .icon{transform:rotate(45deg)}
+#ui-toggle:hover{background:#a28cb31a}
+#ui-toggle:focus-visible{outline-offset:2px}
+.institution-strip{display:none;align-items:center;gap:8px;font-size:10px;line-height:1.7;color:var(--dim);letter-spacing:.3px}
+.institution-strip img{width:23px;height:29px;flex:none}
+.hero-classic{display:none}
+.hero-modern h1{font-size:clamp(18px,1.65vw,25px)}
+:root[data-ui=classic] .institution-strip{display:flex;margin:0 0 15px}
+:root[data-ui=classic] .hero-modern{display:none}
+:root[data-ui=classic] .hero-classic{display:block}
+:root[data-ui=classic] .hero{align-items:center;padding:6px 0 29px}
+:root[data-ui=classic] .hero h1{font-size:clamp(24px,2.12vw,36px);letter-spacing:1px;font-weight:550;line-height:1.5}
+:root[data-ui=classic] .hero .eyebrow{font-size:9px;letter-spacing:2.1px;margin-bottom:13px}
+:root[data-ui=classic] .hero p{font-size:11px;line-height:1.8;letter-spacing:.3px}
+:root[data-ui=classic] .topbar{margin-bottom:10px}
+:root[data-ui=classic] .utility-toolbar{padding:0 2px 15px}
+:root[data-ui=classic] .utility-toolbar>div{gap:7px}
+:root[data-ui=classic] .utility-toolbar .secondary{min-height:30px;padding:6px 10px;font-size:10px;background:var(--glass)}
+:root[data-ui=classic] .utility-toolbar .icon{width:14px;height:14px}
+:root[data-ui=classic] #sync-status{margin:8px 0 4px;font-size:9px;min-height:14px}
+:root[data-ui=classic] .utility-toolbar>small{font-size:8px;line-height:1.65}
+:root[data-ui=classic] .stats{margin-bottom:16px}
+#startup-notice{margin:15px 0;padding:14px 17px;border:1px solid #c7b5df;border-radius:12px;background:var(--surface);font-size:12px;line-height:1.8;color:var(--dim)}
+#startup-notice button{margin-left:10px;color:var(--purple);text-decoration:underline}
+@media(min-width:1550px){:root[data-ui=classic] .hero{padding:14px 0 30px}:root[data-ui=classic] .topbar{margin-bottom:14px}}
+@media(max-width:1250px){:root[data-ui=classic] .hero h1{font-size:27px;letter-spacing:.3px}:root[data-ui=classic] .hero p{font-size:10px}}
+@media(max-width:1000px){:root[data-ui=classic] .hero h1{font-size:26px}}
+@media(max-width:790px){:root[data-ui=classic] .hero h1{font-size:24px}:root[data-ui=classic] .hero{align-items:end}:root[data-ui=classic] .hero p{max-width:320px}.hero-modern .institution-heading{gap:12px}}
+@media(max-width:540px){:root[data-ui=classic] .hero{padding:4px 3px 23px;gap:20px}:root[data-ui=classic] .hero h1{font-size:24px;letter-spacing:.3px}:root[data-ui=classic] .hero p{font-size:10px;max-width:none}:root[data-ui=classic] .hero .eyebrow{font-size:7px;letter-spacing:1.6px;margin-bottom:9px}:root[data-ui=classic] .institution-strip{font-size:9px;gap:7px;margin:0 3px 17px}:root[data-ui=classic] .topbar{margin-bottom:15px}.institution-strip img{width:25px;height:31px}.mode-badge{max-width:128px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.top-actions{gap:4px}#ui-toggle{width:30px}.footer-identity{flex-wrap:nowrap}.footer-identity>span:last-child{font-size:8px}:root[data-ui=classic] .utility-toolbar .secondary{padding:7px 8px;font-size:9px}}
+@media(prefers-reduced-motion:reduce){#ui-toggle .icon{transition:none}}
