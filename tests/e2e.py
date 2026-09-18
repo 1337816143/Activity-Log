@@ -1,5 +1,5 @@
 """Real Chromium + deployed anonymous backend, synthetic data in isolated ?space=qa only."""
-import base64, hashlib, json, os, struct, sys, time, uuid, zlib
+import base64, hashlib, json, os, struct, sys, time, traceback, uuid, zlib
 from pathlib import Path
 from urllib.parse import urljoin
 from playwright.sync_api import sync_playwright, expect
@@ -120,7 +120,9 @@ with sync_playwright() as p:
   for a in exported['attachments']:assert hashlib.sha256(base64.b64decode(byid[a['id']]['data'].split(',')[1])).hexdigest()==original_hashes[a['name']]
   page.locator('#close-utility').click();passed('Complete backup contains shared records and byte-identical original attachments')
   mobile=browser.new_context(viewport={'width':390,'height':844},is_mobile=True,has_touch=True)
-  m=mobile.new_page();monitor(m);m.goto(URL,wait_until='networkidle');wait_connected(m);m.locator('#demo-toggle').click()
+  # Mobile intentionally omits desktop sidebar controls; start its synthetic demo via saved preference.
+  mobile.add_init_script("localStorage.setItem('activity-log:mode','demo')")
+  m=mobile.new_page();monitor(m);m.goto(URL,wait_until='networkidle');expect(m.locator('.record-card')).to_have_count(6,timeout=90000)
   assert not m.evaluate('document.documentElement.scrollWidth>innerWidth');m.screenshot(path=str(OUT/'mobile.png'),full_page=True)
   m.locator('.new-record').first.click();assert not m.evaluate('document.documentElement.scrollWidth>innerWidth');m.screenshot(path=str(OUT/'mobile-editor.png'),full_page=True)
   m.locator('#close-editor').click();m.locator('#theme-toggle').click();expect(m.locator('html')).to_have_attribute('data-theme','dark');m.screenshot(path=str(OUT/'mobile-dark.png'),full_page=True)
@@ -133,6 +135,6 @@ with sync_playwright() as p:
   (OUT/'report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2));print(json.dumps(report,ensure_ascii=False,indent=2))
  except Exception:
   page.screenshot(path=str(OUT/'failure.png'),full_page=True)
-  (OUT/'failure.json').write_text(json.dumps({'passed':results,'errors':errors,'body':page.locator('body').inner_text()[-18000:]},ensure_ascii=False,indent=2))
+  (OUT/'failure.json').write_text(json.dumps({'traceback':traceback.format_exc(),'passed':results,'errors':errors,'body':page.locator('body').inner_text()[-18000:]},ensure_ascii=False,indent=2))
   raise
  finally:browser.close()
