@@ -1,0 +1,32 @@
+name: Archive shared activity records and attachments
+on:
+  schedule:
+    - cron: '2-57/5 * * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/backup.yml'
+      - 'scripts/backup.mjs'
+permissions:
+  contents: write
+  id-token: write
+concurrency:
+  group: activity-log-shared-archive
+  cancel-in-progress: false
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Archive verified snapshot and original files
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/backup.mjs
