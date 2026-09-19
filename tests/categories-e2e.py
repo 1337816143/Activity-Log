@@ -80,7 +80,7 @@ with sync_playwright() as pw:
   q.locator('#excel-modal .modal-close').click();ok('Actual CSV worker preserves a named type, leaves missing types as Other and saves reviewed preset/custom labels')
   mobile=browser.new_context(viewport={'width':390,'height':844},is_mobile=True,has_touch=True)
   m=mobile.new_page();setup(m);m.goto(URL,wait_until='domcontentloaded');ready(m);m.locator('.new-record').first.click()
-  m.locator('[name="category"]').select_option('其他');m.locator('[name="categoryCustom"]').fill('类'.repeat(50))
+  m.locator('[name="category"]').select_option('其他');m.locator('[name="categoryCustom"]').fill('类'*50)
   assert not m.evaluate('document.documentElement.scrollWidth>innerWidth')
   m.screenshot(path=str(OUT/'custom-category-mobile.png'),full_page=True)
   assert not errors,errors;ok('390px custom category form fits without horizontal overflow; no uncaught page exceptions')

@@ -1,6 +1,7 @@
+import {CATEGORY_OPTIONS,DEFAULT_CATEGORY,setCategoryField,readCategoryField,updateCategoryVisibility,suggestCustomCategories} from './categories.js?v=2.2.1';
 import {team} from './team-client.js?v=2.1.0';
 import {draftStore} from './drafts.js?v=2.1.0';
-import {initializeTeamUI,askAdmin,showTeam,showDrafts} from './team-ui.js?v=2.1.0';
+import {initializeTeamUI,askAdmin,showTeam,showDrafts} from './team-ui.js?v=2.2.1';
 import { allRecords, getFile, saveRecord, deleteRecord, prepareFile, mimeFor, MAX_FILE, metadata, blobToData, importBackup, isImage, uid } from './store.js?v=2.1.0';
 import { PhotoDeck } from './deck.js?v=2.1.0';
 import { icon, hydrate, esc, bytes, fileIcon, localDate, prefs, toast, download } from './ui.js?v=2.1.0';
@@ -8,8 +9,8 @@ import { demoRecords, demoFiles } from './demo.js?v=2.1.0';
 
 const $ = (s, root=document) => root.querySelector(s);
 const $$ = (s, root=document) => [...root.querySelectorAll(s)];
-const categories = ['部门工作','会议培训','志愿服务','文体活动','交流分享','其他'];
-const categoryColors = [['#efe7f6','#987eaf'],['#e8edf7','#8495b5'],['#e7eee4','#8c9e7a'],['#f3e6e6','#b38b92'],['#f2ebdf','#b19a76'],['#ece8ee','#998ca4']];
+const categories = CATEGORY_OPTIONS;
+const categoryColors = [['#efe7f6','#987eaf'],['#e8edf7','#8495b5'],['#e7eee4','#8c9e7a'],['#f3e6e6','#b38b92'],['#f2ebdf','#b19a76'],['#e3edf0','#7598a4'],['#ece4f7','#937db1'],['#ece8ee','#998ca4']];
 const titles = {all:'活动总览',timeline:'时间线',media:'附件资料库',people:'人员与参与',starred:'星标活动'};
 const state = {records:[],demo:false,view:'all',layout:'cards',selected:null,query:'',category:'',person:'',from:'',to:'',sort:'date-desc',page:1,ready:false};
 let detailDeck, popupDeck, detailKey='', editing=null, staged=[], removed=[], processing=0, dirty=false, saving=false, previewItems=[], previewIndex=0, previewRecord=null, previewToken=0, zoomed=false, importBusy=false, exporting=false;
@@ -31,12 +32,12 @@ const currentRecord = () => data().find(r=>r.id===state.selected);
 const totalFiles = rows => rows.reduce((sum,r)=>sum+r.attachments.length,0);
 const safeError = e => {console.error(e);toast(e?.name==='QuotaExceededError'?'浏览器存储空间不足，保存未完成。请先备份并清理空间。':e?.message||'操作未完成，请重试。',true);};
 function highlight(text){let s=esc(text);if(state.query){const q=esc(state.query).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');s=s.replace(new RegExp(q,'gi'),m=>`<mark>${m}</mark>`);}return s;}
-function chip(category){const i=Math.max(0,categories.indexOf(category)),[bg,color]=categoryColors[i];return `<span class="category-chip" style="--chip-bg:${bg};--chip-color:${color}">${esc(category)}</span>`;}
+function chip(category){const i=categories.indexOf(category),[bg,color]=categoryColors[i<0?categoryColors.length-1:i];return `<span class="category-chip" title="${esc(category)}" style="--chip-bg:${bg};--chip-color:${color}">${esc(category)}</span>`;}
 function personDots(people){return `<span class="people-dots">${people.slice(0,4).map((p,i)=>`<span class="person-dot" style="--person-bg:${['#e7deef','#e4e9df','#e6e5f1','#eee5dd'][i]}" title="${esc(p)}">${esc(p.slice(-1))}</span>`).join('')}${people.length>4?`<span class="person-dot">+${people.length-4}</span>`:''}</span>`;}
 function empty(title,body,action=''){return `<div class="empty-state"><div class="empty-orb">${icon('folder')}</div><h3>${title}</h3><p>${body}</p>${action}</div>`;}
 function filtered(){const query=state.query.toLocaleLowerCase();return data().filter(r=>(!state.category||r.category===state.category)&&(!state.person||r.people.includes(state.person))&&(!state.from||r.date>=state.from)&&(!state.to||r.date<=state.to)&&(state.view!=='starred'||r.starred)&&(!query||[r.title,r.work,r.people.join(' '),r.category,r.location,r.notes,...r.attachments.map(a=>a.name)].join(' ').toLocaleLowerCase().includes(query))).sort((a,b)=>state.sort==='date-asc'?a.date.localeCompare(b.date)||a.time.localeCompare(b.time):state.sort==='name'?a.title.localeCompare(b.title,'zh-CN'):state.sort==='updated'?b.updatedAt.localeCompare(a.updatedAt):b.date.localeCompare(a.date)||b.time.localeCompare(a.time));}
 function stats(){const rows=data(),month=localDate().slice(0,7),values=[['活动记录',rows.length,'项','layers'],['本月活动',rows.filter(r=>r.date.startsWith(month)).length,'项','calendar'],['参与人员',new Set(rows.flatMap(r=>r.people)).size,'人','users'],['附件归档',totalFiles(rows),'份','folder']];$('#stats').innerHTML=values.map(([title,value,unit,ic],i)=>`<div class="stat"><span class="stat-title">${title}${state.demo?' · 示例':''}</span><span class="stat-value">${String(value).padStart(2,'0')}<small>${unit}</small></span><span class="stat-icon" style="--stat-bg:${['#e9e1f478','#e2e7f378','#e2e9dc78','#f0e7da78'][i]};--stat-color:${['#a18aba','#929dba','#95a083','#b29c7c'][i]}">${icon(ic)}</span></div>`).join('');$('#nav-count').textContent=rows.length;}
-function options(){const cats=[...new Set([...categories,...data().map(r=>r.category)])];$('#category-filter').innerHTML='<option value="">所有类型</option>'+cats.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');$('#category-filter').value=state.category;const people=[...new Set(data().flatMap(r=>r.people))].sort((a,b)=>a.localeCompare(b,'zh-CN'));$('#person-filter').innerHTML='<option value="">所有人员</option>'+people.map(p=>`<option value="${esc(p)}">${esc(p)}</option>`).join('');$('#person-filter').value=state.person;}
+function options(){suggestCustomCategories($('#record-form'),data());const cats=[...new Set([...categories,...data().map(r=>r.category).filter(Boolean)])];$('#category-filter').innerHTML='<option value="">所有类型</option>'+cats.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');$('#category-filter').value=state.category;const people=[...new Set(data().flatMap(r=>r.people))].sort((a,b)=>a.localeCompare(b,'zh-CN'));$('#person-filter').innerHTML='<option value="">所有人员</option>'+people.map(p=>`<option value="${esc(p)}">${esc(p)}</option>`).join('');$('#person-filter').value=state.person;}
 function render(){
  stats();$('#view-title').textContent=titles[state.view];$('#section-title').textContent={all:'所有活动',timeline:'按时间，回看每一次投入',media:'附件资料库',people:'一起参与的人',starred:'值得再看一遍'}[state.view];
  $('#demo-banner').hidden=!state.demo;$('#mode-badge').textContent=state.demo?'演示模式 · 虚构示例':(team.connected?(new URL(location.href).searchParams.get('space')==='qa'?'测试空间 · 不影响团队':'免登录共享库'):'共享服务暂未连接');$('#demo-toggle').textContent=state.demo?'团队 / 旧记录':'查看示例';
@@ -100,14 +101,15 @@ function openEditor(r=null){
  clearTimeout(draftTimer);clearTimeout(cloudTimer);workingId=uid();draftCloudRevision=null;
  editing=r;staged=r?r.attachments.map(a=>({...a,existing:true})):[];removed=[];dirty=false;processing=0;saving=false;
  const form=$('#record-form');form.reset();
- if(r?.category&&!Array.from(form.elements.category.options).some(o=>o.value===r.category))form.elements.category.add(new Option(r.category,r.category));
- for(const k of ['title','date','time','work','category','location','notes'])form.elements[k].value=r?.[k]??(k==='date'?localDate():k==='category'?'部门工作':'');form.elements.people.value=r?r.people.join('、'):'';
+ for(const k of ['title','date','time','work','location','notes'])form.elements[k].value=r?.[k]??(k==='date'?localDate():'');form.elements.people.value=r?r.people.join('、'):'';
+ setCategoryField(form,r?.category??DEFAULT_CATEGORY);suggestCustomCategories(form,data());
  $('#editor-title').textContent=r?'编辑活动记录':'记录新活动';$('#form-status').textContent='支持不完整暂存；正式保存直接写入共享库，无需登录。';lockEditor(false);
  renderStaged();$('#editor').showModal();setTimeout(()=>form.elements.title.focus(),30);
 }
 function lockEditor(lock){$$('input,textarea,select,button',$('#record-form')).forEach(el=>el.disabled=lock);}
 function workingSnapshot(){
- const form=$('#record-form'),fields={};for(const k of ['title','date','time','work','people','category','location','notes'])fields[k]=form.elements[k].value;
+ const form=$('#record-form'),fields={};for(const k of ['title','date','time','work','people','location','notes'])fields[k]=form.elements[k].value;
+ fields.category=readCategoryField(form);fields.categoryChoice=form.elements.category.value;fields.categoryCustom=form.elements.categoryCustom.value;
  return {id:workingId,fields,staged:staged.map(a=>({...a})),removed:[...removed],editing:editing?{...editing}:null,cloudRevision:draftCloudRevision,updatedAt:new Date().toISOString()};
 }
 async function persistWorking({cloud=false,quiet=false}={}){
@@ -140,6 +142,7 @@ async function resumeWorking(d){
  if(d.remote){const editing=d.editor?.editing||null;openEditor(editing);workingId=d.id;draftCloudRevision=d._revision;removed=d.editor?.removed||[];staged=(d.attachments||[]).map(a=>({...a,existing:true}));
   const f=$('#record-form');for(const [k,v] of Object.entries(d.fields||{}))if(f.elements[k])f.elements[k].value=v;
  }else{openEditor(d.editing||null);workingId=d.id;draftCloudRevision=d.cloudRevision||null;removed=d.removed||[];staged=d.staged||[];const f=$('#record-form');for(const [k,v] of Object.entries(d.fields||{}))if(f.elements[k])f.elements[k].value=v;}
+ setCategoryField($('#record-form'),d.fields?.category??d.category??DEFAULT_CATEGORY,d.fields);
  dirty=true;renderStaged();$('#form-status').textContent='已恢复暂存的信息与附件，尚未正式保存。';
 }
 async function closeEditor(){
@@ -177,7 +180,7 @@ async function submitRecord(e){
  saving=true;lockEditor(true);$('#form-status').textContent='正在保存至共享资料库…原内容与附件已暂存。';
  try{
   if(cloudWrite)await cloudWrite;
-  const now=new Date().toISOString(),record={id:editing?.id||workingId,title:f.elements.title.value.trim(),date:f.elements.date.value,time:f.elements.time.value,work:f.elements.work.value.trim(),people,category:f.elements.category.value,location:f.elements.location.value.trim(),notes:f.elements.notes.value.trim(),attachments:staged.map(metadata),starred:editing?.starred||false,createdAt:editing?.createdAt||now,updatedAt:now,_revision:editing?._revision??null,...(editing?.importFingerprint?{importFingerprint:editing.importFingerprint}:{})};
+  const now=new Date().toISOString(),record={id:editing?.id||workingId,title:f.elements.title.value.trim(),date:f.elements.date.value,time:f.elements.time.value,work:f.elements.work.value.trim(),people,category:readCategoryField(f),location:f.elements.location.value.trim(),notes:f.elements.notes.value.trim(),attachments:staged.map(metadata),starred:editing?.starred||false,createdAt:editing?.createdAt||now,updatedAt:now,_revision:editing?._revision??null,...(editing?.importFingerprint?{importFingerprint:editing.importFingerprint}:{})};
   const files=[];for(const a of staged){if(a.blob)files.push(a);else if(!team.manifest.files?.[a.id]){const original=await getFile(a.id);if(!original?.blob)throw new Error('原附件缺失，尚未提交记录。');files.push({...a,...original});}}
   await saveRecord(record,files,removed,{password,draftId:workingId,draftRevision:draftCloudRevision});password='';await draftStore.remove(workingId);dirty=false;
   state.demo=false;prefs.set('mode','own');state.selected=record.id;state.view='all';state.query='';state.category='';state.person='';state.from='';state.to='';state.page=1;$('#search').value='';$('#date-from').value='';$('#date-to').value='';
@@ -235,10 +238,11 @@ async function handleImport(file){
 }
 async function exportCSV(){try{const records=await allRecords();const safe=s=>{const value=String(s??'');return '"'+(/^[\s]*[=+@-]/.test(value)?"'":'')+value.replaceAll('"','""')+'"';};const rows=[['活动名称','活动时间','参与具体工作','人员','活动类型','活动地点','备注','附件数量','附件名称','星标'],...records.map(r=>[r.title,`${r.date} ${r.time}`.trim(),r.work,r.people.join('、'),r.category,r.location,r.notes,r.attachments.length,r.attachments.map(a=>a.name).join('；'),r.starred?'是':'否'])];download(new Blob(['\uFEFF'+rows.map(r=>r.map(safe).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}),`活动记录-${localDate()}.csv`);toast('活动表格已导出，不含附件原文件。');}catch(e){safeError(e);}}
 function showHelp(){
- $('#utility-title').textContent='让记录，顺手一点';$('#utility-body').innerHTML=`<div class="info-box">一个安静的部门活动记录空间。<br>保存做过的工作、同行的人，以及值得回看的现场片刻。</div><section class="help-section"><h3>01 / 写下一条活动</h3><p>点击「记录新活动」，填写活动名称、活动时间、参与具体工作和人员。可补充地点、分类、备注，并在右侧多选或拖入附件。点击保存后才会写入资料库。</p></section><section class="help-section"><h3>02 / 一眼找到需要的内容</h3><p>搜索会查找活动名称、具体工作、人员、地点、备注及附件名称。支持类型、人员、日期组合筛选，卡片 / 表格切换，以及时间线、附件库、人员与星标视图。按 <kbd>/</kbd> 快速聚焦搜索。</p></section><section class="help-section"><h3>03 / 像翻卡片一样回看照片</h3><p>将鼠标移到图片上滚动，或选中图片区域后使用 <kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd>。数字小键盘 <kbd>8 / 2 / 4 / 6</kbd> 同样有效。也可上下或左右拖动、手机触摸滑动。顶层图片完整显示，后续卡片依次叠放；到首尾不循环。</p></section><section class="help-section"><h3>04 / 预览与原文件</h3><p>图片可直接查看、打开大图并切换，点击大图或放大按钮查看原始像素。支持浏览器 PDF、音视频，以及 TXT、Markdown、CSV、JSON 的文本预览。Word、Excel、PowerPoint、压缩包等可归档和下载，暂不内嵌解析。</p></section><section class="help-section"><h3>05 / 草稿、共享与防误删</h3><p>输入会自动暂存到本机，已连接时会尝试同步团队草稿。正式保存经服务端校验后写入共享数据库，页面会明确显示是否成功；GitHub 由定时任务归档，并非即时提交；冲突不覆盖其他成员修改。删除活动或移除已保存附件，需要管理员密码。删除进入回收站，不清除历史。</p><p>成员无需任何账号、登录、令牌或授权。拥有网址的人都能查看、添加和编辑资料。修改有版本记录，删除与移除正式附件需要管理员密码；公开协作并非私密部门空间。</p></section><section class="help-section"><h3>06 / 容量与性能边界</h3><p>单个附件最多 50 MB，每条活动最多 100 个附件，一次添加最多 200 MB。完整备份支持附件原始总量不超过 200 MB，超过后需分别下载原文件。图片切换最多保留六层卡片；系统开启「减少动态效果」时自动弱化动画。流畅程度仍取决于设备与图片大小。</p></section>`;$('#utility').showModal();
+ $('#utility-title').textContent='让记录，顺手一点';$('#utility-body').innerHTML=`<div class="info-box">一个安静的部门活动记录空间。<br>保存做过的工作、同行的人，以及值得回看的现场片刻。</div><section class="help-section"><h3>01 / 写下一条活动</h3><p>点击「记录新活动」，填写活动名称、活动时间、参与具体工作和人员。可补充地点、分类、备注，并在右侧多选或拖入附件。活动类型按七项预设选择；选择“其他”可填写自定义名称，留空则保存为“其他”。已有历史分类会保留原名称。点击保存后才会写入资料库。</p></section><section class="help-section"><h3>02 / 一眼找到需要的内容</h3><p>搜索会查找活动名称、具体工作、人员、地点、备注及附件名称。支持类型、人员、日期组合筛选，卡片 / 表格切换，以及时间线、附件库、人员与星标视图。按 <kbd>/</kbd> 快速聚焦搜索。</p></section><section class="help-section"><h3>03 / 像翻卡片一样回看照片</h3><p>将鼠标移到图片上滚动，或选中图片区域后使用 <kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd>。数字小键盘 <kbd>8 / 2 / 4 / 6</kbd> 同样有效。也可上下或左右拖动、手机触摸滑动。顶层图片完整显示，后续卡片依次叠放；到首尾不循环。</p></section><section class="help-section"><h3>04 / 预览与原文件</h3><p>图片可直接查看、打开大图并切换，点击大图或放大按钮查看原始像素。支持浏览器 PDF、音视频，以及 TXT、Markdown、CSV、JSON 的文本预览。Word、Excel、PowerPoint、压缩包等可归档和下载，暂不内嵌解析。</p></section><section class="help-section"><h3>05 / 草稿、共享与防误删</h3><p>输入会自动暂存到本机，已连接时会尝试同步团队草稿。正式保存经服务端校验后写入共享数据库，页面会明确显示是否成功；GitHub 由定时任务归档，并非即时提交；冲突不覆盖其他成员修改。删除活动或移除已保存附件，需要管理员密码。删除进入回收站，不清除历史。</p><p>成员无需任何账号、登录、令牌或授权。拥有网址的人都能查看、添加和编辑资料。修改有版本记录，删除与移除正式附件需要管理员密码；公开协作并非私密部门空间。</p></section><section class="help-section"><h3>06 / 容量与性能边界</h3><p>单个附件最多 50 MB，每条活动最多 100 个附件，一次添加最多 200 MB。完整备份支持附件原始总量不超过 200 MB，超过后需分别下载原文件。图片切换最多保留六层卡片；系统开启「减少动态效果」时自动弱化动画。流畅程度仍取决于设备与图片大小。</p></section>`;$('#utility').showModal();
 }
 
 hydrate();
+$('#record-form').elements.category.addEventListener('change',()=>updateCategoryVisibility($('#record-form')));
 if(prefs.get('theme')==='dark')document.documentElement.dataset.theme='dark';
 $('#theme-toggle').innerHTML=icon(document.documentElement.dataset.theme==='dark'?'sun':'moon');
 $('#theme-toggle').onclick=()=>{const dark=document.documentElement.dataset.theme!=='dark';document.documentElement.dataset.theme=dark?'dark':'light';prefs.set('theme',dark?'dark':'light');$('#theme-toggle').innerHTML=icon(dark?'sun':'moon');$('#theme-toggle').setAttribute('aria-label',dark?'切换浅色模式':'切换深色模式');};
