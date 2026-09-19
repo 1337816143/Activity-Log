@@ -41,3 +41,14 @@ test('HTML activity editor matches the dictionary and no legacy types leak into 
 test('Built-in examples retain all six records and all thirteen attachments',async()=>{
  const {demoRecords}=await import('../assets/demo.js');assert.equal(demoRecords.length,6);assert.equal(demoRecords.reduce((n,r)=>n+r.attachments.length,0),13);assert(demoRecords.every(r=>C.isValid(r.category)));
 });
+test('Real SheetJS cell objects preserve explicit category values and selected fallback',()=>{
+ const cell=value=>({v:value,w:String(value),t:'s'});
+ const rows=[['活动名称','日期','具体工作','人员','活动类型'],
+  ...types.map(c=>['类别测试','2025-09-18','原工作','测试人员',c]),
+  ['未填类型','2025-09-18','实践分工','测试乙',''],
+  ['旧分类','2025-09-18','不改原文','测试丙','待核实类型']].map(row=>row.map(cell));
+ const r=analyze(rows,{category:'就业实践'});
+ assert.deepEqual(r.slice(0,7).map(row=>row.category),types);assert(r.slice(0,8).every(row=>row.include));
+ assert.equal(r[7].category,'就业实践');assert.equal(r[8].category,'');
+ assert.equal(r[8].originalCategory,'待核实类型');assert.equal(r[8].include,false);
+});
