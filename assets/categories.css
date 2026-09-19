@@ -1,0 +1,5 @@
+/* Uses the existing glass-form styles in both UI modes; no layout/theme replacement. */
+#category-custom-field small{line-height:1.8}
+#category-custom-field input{min-width:0;max-width:100%}
+.import-table .category-cell{min-width:140px;max-width:220px}
+.record-head .category-chip{max-width:60%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
