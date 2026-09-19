@@ -1,15 +1,16 @@
-import {team} from './team-client.js?v=2.1.0';
-import {draftStore} from './drafts.js?v=2.1.0';
-import {initializeTeamUI,askAdmin,showTeam,showDrafts} from './team-ui.js?v=2.1.0';
-import { allRecords, getFile, saveRecord, deleteRecord, prepareFile, mimeFor, MAX_FILE, metadata, blobToData, importBackup, isImage, uid } from './store.js?v=2.1.0';
-import { PhotoDeck } from './deck.js?v=2.1.0';
-import { icon, hydrate, esc, bytes, fileIcon, localDate, prefs, toast, download } from './ui.js?v=2.1.0';
-import { demoRecords, demoFiles } from './demo.js?v=2.1.0';
+import './categories.js?v=2.2.1';
+import {team} from './team-client.js?v=2.2.1';
+import {draftStore} from './drafts.js?v=2.2.1';
+import {initializeTeamUI,askAdmin,showTeam,showDrafts} from './team-ui.js?v=2.2.1';
+import { allRecords, getFile, saveRecord, deleteRecord, prepareFile, mimeFor, MAX_FILE, metadata, blobToData, importBackup, isImage, uid } from './store.js?v=2.2.1';
+import { PhotoDeck } from './deck.js?v=2.2.1';
+import { icon, hydrate, esc, bytes, fileIcon, localDate, prefs, toast, download } from './ui.js?v=2.2.1';
+import { demoRecords, demoFiles } from './demo.js?v=2.2.1';
 
 const $ = (s, root=document) => root.querySelector(s);
 const $$ = (s, root=document) => [...root.querySelectorAll(s)];
-const categories = ['部门工作','会议培训','志愿服务','文体活动','交流分享','其他'];
-const categoryColors = [['#efe7f6','#987eaf'],['#e8edf7','#8495b5'],['#e7eee4','#8c9e7a'],['#f3e6e6','#b38b92'],['#f2ebdf','#b19a76'],['#ece8ee','#998ca4']];
+const {values:categories,defaultValue:defaultCategory,normalize:normalizeCategory,isValid:isCategory,populate:populateCategories}=globalThis.ActivityCategories;
+const categoryColors = [['#e8edf7','#8495b5'],['#e6edf2','#7c9cad'],['#f2ebdf','#b19a76'],['#efe7f6','#987eaf'],['#e7eee4','#8c9e7a'],['#f3e6e6','#b38b92'],['#ece8ee','#998ca4']];
 const titles = {all:'活动总览',timeline:'时间线',media:'附件资料库',people:'人员与参与',starred:'星标活动'};
 const state = {records:[],demo:false,view:'all',layout:'cards',selected:null,query:'',category:'',person:'',from:'',to:'',sort:'date-desc',page:1,ready:false};
 let detailDeck, popupDeck, detailKey='', editing=null, staged=[], removed=[], processing=0, dirty=false, saving=false, previewItems=[], previewIndex=0, previewRecord=null, previewToken=0, zoomed=false, importBusy=false, exporting=false;
@@ -31,12 +32,12 @@ const currentRecord = () => data().find(r=>r.id===state.selected);
 const totalFiles = rows => rows.reduce((sum,r)=>sum+r.attachments.length,0);
 const safeError = e => {console.error(e);toast(e?.name==='QuotaExceededError'?'浏览器存储空间不足，保存未完成。请先备份并清理空间。':e?.message||'操作未完成，请重试。',true);};
 function highlight(text){let s=esc(text);if(state.query){const q=esc(state.query).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');s=s.replace(new RegExp(q,'gi'),m=>`<mark>${m}</mark>`);}return s;}
-function chip(category){const i=Math.max(0,categories.indexOf(category)),[bg,color]=categoryColors[i];return `<span class="category-chip" style="--chip-bg:${bg};--chip-color:${color}">${esc(category)}</span>`;}
+function chip(category){category=normalizeCategory(category)||('原分类：'+category);const i=Math.max(0,categories.indexOf(category)),[bg,color]=categoryColors[i];return `<span class="category-chip" style="--chip-bg:${bg};--chip-color:${color}">${esc(category)}</span>`;}
 function personDots(people){return `<span class="people-dots">${people.slice(0,4).map((p,i)=>`<span class="person-dot" style="--person-bg:${['#e7deef','#e4e9df','#e6e5f1','#eee5dd'][i]}" title="${esc(p)}">${esc(p.slice(-1))}</span>`).join('')}${people.length>4?`<span class="person-dot">+${people.length-4}</span>`:''}</span>`;}
 function empty(title,body,action=''){return `<div class="empty-state"><div class="empty-orb">${icon('folder')}</div><h3>${title}</h3><p>${body}</p>${action}</div>`;}
-function filtered(){const query=state.query.toLocaleLowerCase();return data().filter(r=>(!state.category||r.category===state.category)&&(!state.person||r.people.includes(state.person))&&(!state.from||r.date>=state.from)&&(!state.to||r.date<=state.to)&&(state.view!=='starred'||r.starred)&&(!query||[r.title,r.work,r.people.join(' '),r.category,r.location,r.notes,...r.attachments.map(a=>a.name)].join(' ').toLocaleLowerCase().includes(query))).sort((a,b)=>state.sort==='date-asc'?a.date.localeCompare(b.date)||a.time.localeCompare(b.time):state.sort==='name'?a.title.localeCompare(b.title,'zh-CN'):state.sort==='updated'?b.updatedAt.localeCompare(a.updatedAt):b.date.localeCompare(a.date)||b.time.localeCompare(a.time));}
+function filtered(){const query=state.query.toLocaleLowerCase();return data().filter(r=>(!state.category||normalizeCategory(r.category)===state.category)&&(!state.person||r.people.includes(state.person))&&(!state.from||r.date>=state.from)&&(!state.to||r.date<=state.to)&&(state.view!=='starred'||r.starred)&&(!query||[r.title,r.work,r.people.join(' '),r.category,r.location,r.notes,...r.attachments.map(a=>a.name)].join(' ').toLocaleLowerCase().includes(query))).sort((a,b)=>state.sort==='date-asc'?a.date.localeCompare(b.date)||a.time.localeCompare(b.time):state.sort==='name'?a.title.localeCompare(b.title,'zh-CN'):state.sort==='updated'?b.updatedAt.localeCompare(a.updatedAt):b.date.localeCompare(a.date)||b.time.localeCompare(a.time));}
 function stats(){const rows=data(),month=localDate().slice(0,7),values=[['活动记录',rows.length,'项','layers'],['本月活动',rows.filter(r=>r.date.startsWith(month)).length,'项','calendar'],['参与人员',new Set(rows.flatMap(r=>r.people)).size,'人','users'],['附件归档',totalFiles(rows),'份','folder']];$('#stats').innerHTML=values.map(([title,value,unit,ic],i)=>`<div class="stat"><span class="stat-title">${title}${state.demo?' · 示例':''}</span><span class="stat-value">${String(value).padStart(2,'0')}<small>${unit}</small></span><span class="stat-icon" style="--stat-bg:${['#e9e1f478','#e2e7f378','#e2e9dc78','#f0e7da78'][i]};--stat-color:${['#a18aba','#929dba','#95a083','#b29c7c'][i]}">${icon(ic)}</span></div>`).join('');$('#nav-count').textContent=rows.length;}
-function options(){const cats=[...new Set([...categories,...data().map(r=>r.category)])];$('#category-filter').innerHTML='<option value="">所有类型</option>'+cats.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');$('#category-filter').value=state.category;const people=[...new Set(data().flatMap(r=>r.people))].sort((a,b)=>a.localeCompare(b,'zh-CN'));$('#person-filter').innerHTML='<option value="">所有人员</option>'+people.map(p=>`<option value="${esc(p)}">${esc(p)}</option>`).join('');$('#person-filter').value=state.person;}
+function options(){const cats=categories;$('#category-filter').innerHTML='<option value="">所有类型</option>'+cats.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');$('#category-filter').value=state.category;const people=[...new Set(data().flatMap(r=>r.people))].sort((a,b)=>a.localeCompare(b,'zh-CN'));$('#person-filter').innerHTML='<option value="">所有人员</option>'+people.map(p=>`<option value="${esc(p)}">${esc(p)}</option>`).join('');$('#person-filter').value=state.person;}
 function render(){
  stats();$('#view-title').textContent=titles[state.view];$('#section-title').textContent={all:'所有活动',timeline:'按时间，回看每一次投入',media:'附件资料库',people:'一起参与的人',starred:'值得再看一遍'}[state.view];
  $('#demo-banner').hidden=!state.demo;$('#mode-badge').textContent=state.demo?'演示模式 · 虚构示例':(team.connected?(new URL(location.href).searchParams.get('space')==='qa'?'测试空间 · 不影响团队':'免登录共享库'):'共享服务暂未连接');$('#demo-toggle').textContent=state.demo?'团队 / 旧记录':'查看示例';
@@ -100,8 +101,8 @@ function openEditor(r=null){
  clearTimeout(draftTimer);clearTimeout(cloudTimer);workingId=uid();draftCloudRevision=null;
  editing=r;staged=r?r.attachments.map(a=>({...a,existing:true})):[];removed=[];dirty=false;processing=0;saving=false;
  const form=$('#record-form');form.reset();
- if(r?.category&&!Array.from(form.elements.category.options).some(o=>o.value===r.category))form.elements.category.add(new Option(r.category,r.category));
- for(const k of ['title','date','time','work','category','location','notes'])form.elements[k].value=r?.[k]??(k==='date'?localDate():k==='category'?'部门工作':'');form.elements.people.value=r?r.people.join('、'):'';
+ for(const k of ['title','date','time','work','category','location','notes'])form.elements[k].value=r?.[k]??(k==='date'?localDate():k==='category'?defaultCategory:'');form.elements.people.value=r?r.people.join('、'):'';
+ populateCategories(form.elements.category,r?.category??defaultCategory);
  $('#editor-title').textContent=r?'编辑活动记录':'记录新活动';$('#form-status').textContent='支持不完整暂存；正式保存直接写入共享库，无需登录。';lockEditor(false);
  renderStaged();$('#editor').showModal();setTimeout(()=>form.elements.title.focus(),30);
 }
@@ -140,6 +141,7 @@ async function resumeWorking(d){
  if(d.remote){const editing=d.editor?.editing||null;openEditor(editing);workingId=d.id;draftCloudRevision=d._revision;removed=d.editor?.removed||[];staged=(d.attachments||[]).map(a=>({...a,existing:true}));
   const f=$('#record-form');for(const [k,v] of Object.entries(d.fields||{}))if(f.elements[k])f.elements[k].value=v;
  }else{openEditor(d.editing||null);workingId=d.id;draftCloudRevision=d.cloudRevision||null;removed=d.removed||[];staged=d.staged||[];const f=$('#record-form');for(const [k,v] of Object.entries(d.fields||{}))if(f.elements[k])f.elements[k].value=v;}
+ populateCategories($('#record-form').elements.category,d.fields?.category??defaultCategory);
  dirty=true;renderStaged();$('#form-status').textContent='已恢复暂存的信息与附件，尚未正式保存。';
 }
 async function closeEditor(){
@@ -167,6 +169,7 @@ async function stageFiles(files){
 }
 async function submitRecord(e){
  e.preventDefault();if(processing||saving)return;const f=$('#record-form');if(!f.reportValidity())return;
+ if(!isCategory(f.elements.category.value)){toast('请从七项活动类型中选择一项。',true);return;}
  const people=[...new Set(f.elements.people.value.split(/[,，、;；\n]+/).map(s=>s.trim()).filter(Boolean))];
  if(!f.elements.title.value.trim()||!f.elements.work.value.trim()||!people.length){toast('必填项不能只包含空格。',true);return;}
  if(people.length>100||people.some(p=>p.length>100)){toast('最多 100 位人员，每个姓名不超过 100 字。',true);return;}

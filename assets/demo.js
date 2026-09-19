@@ -7,12 +7,12 @@ const posters = [
 ];
 function poster(i){const [title,sub,foot,bg,ink,light]=posters[i%4];return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="840" viewBox="0 0 1200 840"><defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="${bg}"/><stop offset="1" stop-color="#f5f1e9"/></linearGradient><linearGradient id="hill" x2="1" y2="1"><stop stop-color="${light}"/><stop offset="1" stop-color="${ink}"/></linearGradient></defs><rect width="1200" height="840" fill="url(#sky)"/><path d="M0 0h1200v840H0z" fill="none" stroke="#ffffff" stroke-opacity=".2" stroke-width="30"/><circle cx="960" cy="215" r="86" fill="#fff6df" opacity=".9"/><path d="M0 600Q270 360 575 550T1200 475V840H0" fill="${light}" opacity=".65"/><path d="M0 745Q420 410 720 625T1200 560V840H0" fill="url(#hill)" opacity=".8"/><path d="M900 842Q720 630 795 595T680 553" fill="none" stroke="#f5edda" stroke-width="45" opacity=".75"/><path d="M1070 840V540m-34 55 34-78 34 78m-47-8 13-37 15 38" stroke="${ink}" fill="${ink}" stroke-width="5" opacity=".65"/><text x="83" y="100" font-family="Arial,sans-serif" letter-spacing="6" font-size="17" fill="${ink}">ACTIVITY LOG / VISUAL NOTES</text><text x="79" y="258" font-family="sans-serif" font-size="57" letter-spacing="5" fill="${ink}">${title}</text><text x="84" y="307" font-family="Arial,sans-serif" letter-spacing="6" font-size="16" fill="${ink}" opacity=".75">${sub}</text><path d="M84 353h60" stroke="${ink}" stroke-width="1" opacity=".5"/><text x="84" y="756" font-family="Arial,sans-serif" letter-spacing="4" font-size="13" fill="#fff" opacity=".9">${foot}</text><text x="1090" y="757" font-family="Arial,sans-serif" font-size="15" fill="#fff">0${i+1}</text><text x="85" y="805" font-family="sans-serif" font-size="12" fill="#fff" opacity=".65">示例插画 · 非真实活动照片</text></svg>`;}
 const rows = [
- ['2026-09-16','秋日迎新 · 从相遇开始','负责活动方案策划、迎新物料准备与现场统筹；完成签到引导、照片整理及活动总结。',['林宁','陈禾','周予'],'部门工作','学生活动中心','把第一次见面的拘谨，变成一起做事的默契。',0,4],
- ['2026-09-12','新学期工作坊：把想法变成行动','整理培训资料，协助嘉宾对接与会务准备；记录小组讨论成果，收集活动反馈。',['林宁','许安'],'会议培训','综合楼 302','',1,2],
- ['2026-09-08','校园志愿行动 · 让温暖发生','参与志愿者排班与点位协调，负责物资清点、现场秩序维护和活动影像记录。',['陈禾','周予','沈言'],'志愿服务','校园公共空间','',2,3],
- ['2026-09-03','午后分享会：好方法，一起聊','汇总报名名单，设计讨论提纲；负责主持串场、计时提醒和分享内容整理。',['许安','沈言'],'交流分享','研讨室 B','',3,2],
- ['2026-08-28','夏末相聚 · 部门交流日','参与活动流程设计、场地布置及互动环节组织；整理成员建议与后续分工。',['林宁','陈禾','沈言'],'文体活动','多功能活动室','',0,1],
- ['2026-08-22','暑期工作复盘与资料归档','梳理阶段工作进度，核对活动记录与附件；协助完成资料分类、命名和归档。',['周予','许安'],'部门工作','线上会议','',1,0]
+ ['2026-09-16','秋日迎新 · 从相遇开始','负责活动方案策划、迎新物料准备与现场统筹；完成签到引导、照片整理及活动总结。',['林宁','陈禾','周予'],'部门活动','学生活动中心','把第一次见面的拘谨，变成一起做事的默契。',0,4],
+ ['2026-09-12','新学期工作坊：把想法变成行动','整理培训资料，协助嘉宾对接与会务准备；记录小组讨论成果，收集活动反馈。',['林宁','许安'],'指导讲座','综合楼 302','',1,2],
+ ['2026-09-08','校园志愿行动 · 让温暖发生','参与志愿者排班与点位协调，负责物资清点、现场秩序维护和活动影像记录。',['陈禾','周予','沈言'],'专项活动','校园公共空间','',2,3],
+ ['2026-09-03','午后分享会：好方法，一起聊','汇总报名名单，设计讨论提纲；负责主持串场、计时提醒和分享内容整理。',['许安','沈言'],'经验分享','研讨室 B','',3,2],
+ ['2026-08-28','夏末相聚 · 部门交流日','参与活动流程设计、场地布置及互动环节组织；整理成员建议与后续分工。',['林宁','陈禾','沈言'],'部门活动','多功能活动室','',0,1],
+ ['2026-08-22','暑期工作复盘与资料归档','梳理阶段工作进度，核对活动记录与附件；协助完成资料分类、命名和归档。',['周予','许安'],'部门活动','线上会议','',1,0]
 ];
 export const demoFiles = new Map();
 export const demoRecords = rows.map((r,i)=>{

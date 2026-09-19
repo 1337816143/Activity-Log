@@ -37,7 +37,7 @@ with sync_playwright() as p:
   expect(page.locator('.hero-classic')).to_be_visible();expect(page.locator('.hero-modern')).not_to_be_visible()
   assert page.locator('#theme-toggle + #ui-toggle').count()==1
   assert page.locator('img[src*="clst-official-header"]').count()==0
-  expect(page.locator('.footer-version')).to_contain_text('v2.2.0')
+  expect(page.locator('.footer-version')).to_contain_text('v2.2.1')
   no_overflow(page);passed('Classic glass is the default; cross-star sits beside the independent moon; incorrect college logo absent')
   page.locator('#demo-toggle').click();expect(page.locator('.record-card')).to_have_count(6)
   page.wait_for_function('Array.from(document.querySelectorAll("#inline-deck img")).every(i=>i.complete && i.naturalWidth>0)')

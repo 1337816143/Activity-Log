@@ -1,5 +1,8 @@
 /* Heuristic structural parser. No formulas or macros are executed. Ambiguities remain visible for review. */
 (function(root){
+ const coreFields=['title','date','work','people'];
+ const types=()=>root.ActivityCategories;
+ const categoryField=c=>['活动类型','活动分类','类型','分类'].includes(norm(c));
  const value=c=>c&&typeof c==='object'&&!(c instanceof Date)?(c.w??c.v??''):c??'';
  const text=c=>String(value(c)).trim();
  const norm=s=>text(s).replace(/[\s：:（）()\[\]【】*_\-]/g,'').toLowerCase();
@@ -25,18 +28,18 @@
    const before=records.length;let mapping=null,carry={title:'',date:null},vertical={};
    const manual=options.mapping?.[sheet.name];
    function add(vals,row,notes=[]){const title=text(vals.title),work=text(vals.work),people=text(vals.people),originalDate=text(vals.date);if(![title,work,people,originalDate].some(Boolean))return;
-    const parsed=parseDate(vals.date,options.year);const warnings=[...notes,...(parsed.warning?[parsed.warning]:[])];for(const [name,v] of [['活动名称',title],['具体工作',work],['人员',people]])if(!v)warnings.push(name+'缺失');records.push({sheet:sheet.name,row,title,work,people,date:parsed.date,originalDate,warnings,include:!!(title&&work&&people&&parsed.date),category:'部门工作',location:'',notes:''});
+    const parsed=parseDate(vals.date,options.year);const warnings=[...notes,...(parsed.warning?[parsed.warning]:[])];for(const [name,v] of [['活动名称',title],['具体工作',work],['人员',people]])if(!v)warnings.push(name+'缺失');const cat=text(vals.category);if(cat&&!types()?.normalize(cat))warnings.push('活动类型不在新七项分类中，请选择；原类型：'+cat);records.push({sheet:sheet.name,row,title,work,people,date:parsed.date,originalDate,warnings,include:!!(title&&work&&people&&parsed.date&&(!cat||types()?.normalize(cat))),category:types()?.normalize(vals.category)||(text(vals.category)?'':(types()?.normalize(options.category)||'部门活动')),originalCategory:text(vals.category),location:'',notes:''});
    }
-   function flushVertical(row){if(Object.keys(vertical).length>=3)add(vertical,row,['纵向字段表，请核对字段与人员对应关系']);vertical={};}
+   function flushVertical(row){if(coreFields.filter(k=>vertical[k]!==undefined).length>=3)add(vertical,row,['纵向字段表，请核对字段与人员对应关系']);vertical={};}
    for(let ri=0;ri<sheet.rows.length;ri++){
     if(records.length>=10000)throw new Error('最多识别 10000 条记录，请拆分文件。');
     const row=sheet.rows[ri]||[];if(!row.some(c=>text(c))){carry={title:'',date:null};flushVertical(ri);continue;}
     if(manual){if(ri+1<manual.startRow)continue;const vals={};for(const [k,c]of Object.entries(manual.columns))vals[k]=row[c];if(Object.values(vals).filter(v=>field(v)).length>=3)continue;add(vals,ri+1,['使用手动指定列']);continue;}
     const found={};row.forEach((c,i)=>{const k=field(c);if(k&&found[k]===undefined)found[k]=i;});
-    if(Object.keys(found).length>=3){flushVertical(ri);mapping=found;carry={title:'',date:null};continue;}
-    if(!mapping&&field(row[0])&&row.length>=2){const k=field(row[0]);if(vertical[k])flushVertical(ri);vertical[k]=row[1];if(Object.keys(vertical).length===4)flushVertical(ri+1);continue;}
+    if(Object.keys(found).length>=3){flushVertical(ri);const ci=row.findIndex(categoryField);if(ci>=0)found.category=ci;mapping=found;carry={title:'',date:null};continue;}
+    if(!mapping&&(field(row[0])||categoryField(row[0]))&&row.length>=2){const k=field(row[0])||'category';if(vertical[k])flushVertical(ri);vertical[k]=row[1];continue;}
     if(!mapping){skipped.push({sheet:sheet.name,row:ri+1,reason:'表头前的说明行或无法识别的内容'});continue;}
-    const vals={};for(const k of ['title','date','work','people'])vals[k]=mapping[k]===undefined?'':row[mapping[k]];
+    const vals={};for(const k of [...coreFields,'category'])vals[k]=mapping[k]===undefined?'':row[mapping[k]];
     const first=text(vals.title);if(/^(合计|总计|备注|说明|小计)([：:]|$)/.test(first)){skipped.push({sheet:sheet.name,row:ri+1,reason:'汇总或说明行'});carry={title:'',date:null};continue;}
     if(!text(vals.work)&&!text(vals.people)){skipped.push({sheet:sheet.name,row:ri+1,reason:'没有人员或工作内容的行'});carry={title:'',date:null};continue;}
     const warnings=[];if(!first&&carry.title){vals.title=carry.title;warnings.push('活动名沿用同一连续分组');}

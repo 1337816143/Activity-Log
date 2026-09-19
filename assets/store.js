@@ -1,4 +1,5 @@
-import {team} from './team-client.js?v=2.1.0';
+import './categories.js?v=2.2.1';
+import {team} from './team-client.js?v=2.2.1';
 /** Local-first transactional storage. Original attachments are kept as Blobs, never localStorage/base64. */
 const DB_NAME = 'activity-log-v1';
 let connection;
@@ -84,7 +85,7 @@ export function validateRecord(r) {
   const str = (x, max) => typeof x === 'string' && x.length <= max;
   if (!r || !str(r.id, 100) || !r.id || !str(r.title,120) || !r.title.trim() || !str(r.work,10000) || !r.work.trim() || !/^\d{4}-\d{2}-\d{2}$/.test(r.date) || !Number.isFinite(Date.parse(r.date)) || new Date(r.date).toISOString().slice(0,10) !== r.date || !Array.isArray(r.people) || !r.people.length || r.people.length > 100 || !r.people.every(p => str(p,100) && p.trim()) || !Array.isArray(r.attachments) || r.attachments.length > 100) throw new Error('备份记录结构无效或字段超限，未导入任何数据。');
   for (const a of r.attachments) if (!a || !str(a.id,100) || !a.id || !str(a.name,255) || !a.name || !str(a.type,150) || !Number.isSafeInteger(a.size) || a.size < 0 || a.size > MAX_FILE) throw new Error('备份附件信息无效。');
-  return { id:r.id, title:r.title, work:r.work, date:r.date, people:[...new Set(r.people)], attachments:r.attachments.map(metadata), time:/^\d{2}:\d{2}$/.test(r.time) ? r.time : '', category:str(r.category,50) ? r.category : '其他', location:str(r.location,200) ? r.location : '', notes:str(r.notes,10000) ? r.notes : '', starred:r.starred === true, createdAt:str(r.createdAt,40) ? r.createdAt : new Date().toISOString(), updatedAt:str(r.updatedAt,40) ? r.updatedAt : new Date().toISOString(), ...(typeof r.importFingerprint==='string'?{importFingerprint:r.importFingerprint}:{}) };
+  return { id:r.id, title:r.title, work:r.work, date:r.date, people:[...new Set(r.people)], attachments:r.attachments.map(metadata), time:/^\d{2}:\d{2}$/.test(r.time) ? r.time : '', category:str(r.category,50)&&r.category.trim() ? (globalThis.ActivityCategories.normalize(r.category)||r.category) : globalThis.ActivityCategories.defaultValue, location:str(r.location,200) ? r.location : '', notes:str(r.notes,10000) ? r.notes : '', starred:r.starred === true, createdAt:str(r.createdAt,40) ? r.createdAt : new Date().toISOString(), updatedAt:str(r.updatedAt,40) ? r.updatedAt : new Date().toISOString(), ...(typeof r.importFingerprint==='string'?{importFingerprint:r.importFingerprint}:{}) };
 }
 export async function importBackup(payload) {
   if (!payload || payload.app !== 'Activity-Log' || payload.version !== 1 || !Array.isArray(payload.records) || payload.records.length > 10000 || !Array.isArray(payload.files) || payload.files.length > 20000) throw new Error('不是有效的 Activity Log 完整备份文件。');
