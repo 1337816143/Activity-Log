@@ -104,7 +104,7 @@ function openEditor(r=null){
  for(const k of ['title','date','time','work','category','location','notes'])form.elements[k].value=r?.[k]??(k==='date'?localDate():k==='category'?defaultCategory:'');form.elements.people.value=r?r.people.join('、'):'';
  populateCategories(form.elements.category,r?.category??defaultCategory);
  $('#editor-title').textContent=r?'编辑活动记录':'记录新活动';$('#form-status').textContent='支持不完整暂存；正式保存直接写入共享库，无需登录。';lockEditor(false);
- renderStaged();$('#editor').showModal();setTimeout(()=>form.elements.title.focus(),30);
+ renderStaged();$('#editor').showModal();form.elements.title.focus({preventScroll:true});
 }
 function lockEditor(lock){$$('input,textarea,select,button',$('#record-form')).forEach(el=>el.disabled=lock);}
 function workingSnapshot(){
