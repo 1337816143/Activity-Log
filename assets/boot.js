@@ -13,7 +13,7 @@ function show(message) {
 }
 try {
   slow = setTimeout(() => show('应用文件加载较慢，记录未被删除。请检查网络后重新加载。'), 15000);
-  await import('./app.js?v=2.2.0');
+  await import('./app.js?v=2.2.1');
   clearTimeout(slow); document.getElementById('startup-notice')?.remove();
   document.documentElement.dataset.appReady = 'true';
 } catch (error) {

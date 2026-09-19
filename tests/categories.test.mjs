@@ -1,0 +1,12 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import vm from 'node:vm';
+import fs from 'node:fs';
+import {CATEGORY_OPTIONS,STANDARD_CATEGORIES,DEFAULT_CATEGORY,categoryName,categorySelection} from '../assets/categories.js';
+const ctx={Date,console};vm.createContext(ctx);vm.runInContext(fs.readFileSync(new URL('../assets/excel-core.js',import.meta.url),'utf8'),ctx);const E=ctx.ActivityExcel;
+test('Exactly seven requested presets in order plus Other',()=>{assert.deepEqual([...CATEGORY_OPTIONS],['招聘宣讲','线上宣传','经验分享','指导讲座','就业实践','专项活动','部门活动','其他']);assert.equal(DEFAULT_CATEGORY,'部门活动');assert.equal(STANDARD_CATEGORIES.length,7);});
+test('Custom names persist as actual category names, trim edges and allow plain Other',()=>{assert.equal(categoryName('其他',' 校友访谈 '),'校友访谈');assert.equal(categoryName('其他','  '),'其他');for(const x of STANDARD_CATEGORIES)assert.equal(categoryName(x,'not used'),x);assert.deepEqual(categorySelection('校友访谈'),{selection:'其他',custom:'校友访谈'});});
+test('Historical categories and old draft categories are not silently reclassified',()=>{for(const x of ['部门工作','会议培训','志愿服务','文体活动','交流分享']){const {selection,custom}=categorySelection(x);assert.equal(selection,'其他');assert.equal(categoryName(selection,custom),x);}});
+test('Custom labels obey the same 50-character server bound and retain literal symbols',()=>{assert.equal(categoryName('其他','类'.repeat(50)).length,50);assert.throws(()=>categoryName('其他','类'.repeat(51)),/50/);assert.equal(categoryName('其他','<b>校友 & 企业</b>'),'<b>校友 & 企业</b>');});
+test('Excel category headers survive repeated / reordered blocks; missing category is Other',()=>{const result=E.analyze([{name:'历史',rows:[['活动名称','日期','具体工作','人员','活动类型'],['A','2025-09-18','布置','甲','招聘宣讲'],['A','2025-09-18','宣传','乙','校友访谈'],[],['类型','姓名','日期','参与具体工作','活动名称'],['经验分享','丙','2025-11-25','主持','B'],[],['活动名称','日期','具体工作','人员'],['C','2025-12-25','整理','丁']]}]);assert.deepEqual(Array.from(result.records,r=>r.category),['招聘宣讲','校友访谈','经验分享','其他']);assert.equal(result.records[1].people,'乙');});
+test('Vertical sheet supports category after all four required fields, without dropping the fifth field',()=>{const result=E.analyze([{name:'记录',rows:[['活动名称','活动A'],['活动时间','2025-09-18'],['参与具体工作','摄影'],['人员','甲'],['活动类型','专项活动']]}]);assert.equal(result.records.length,1);assert.equal(result.records[0].category,'专项活动');});

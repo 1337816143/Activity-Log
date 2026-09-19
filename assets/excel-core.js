@@ -3,7 +3,7 @@
  const value=c=>c&&typeof c==='object'&&!(c instanceof Date)?(c.w??c.v??''):c??'';
  const text=c=>String(value(c)).trim();
  const norm=s=>text(s).replace(/[\s：:（）()\[\]【】*_\-]/g,'').toLowerCase();
- const aliases={title:['活动名称','项目名称','活动主题','活动','项目','工作名称','工作事项','事项','名称'],date:['活动时间','活动日期','日期','时间','举办时间','举办日期'],work:['参与具体工作','具体工作','参与工作','工作内容','负责工作','承担工作','分工','职责','具体分工'],people:['人员','姓名','参与人员','负责人','负责人员','参与人','工作人员','成员']};
+ const aliases={title:['活动名称','项目名称','活动主题','活动','项目','工作名称','工作事项','事项','名称'],date:['活动时间','活动日期','日期','时间','举办时间','举办日期'],work:['参与具体工作','具体工作','参与工作','工作内容','负责工作','承担工作','分工','职责','具体分工'],people:['人员','姓名','参与人员','负责人','负责人员','参与人','工作人员','成员'],category:['活动类型','活动类别','类型','类别','分类']};
  const field=c=>Object.keys(aliases).find(k=>aliases[k].includes(norm(c)));
  function parseDate(cell,year=''){
   let raw=cell&&typeof cell==='object'&&!(cell instanceof Date)?cell.v:cell,s=text(cell),warning='',needsYear=false;
@@ -25,7 +25,7 @@
    const before=records.length;let mapping=null,carry={title:'',date:null},vertical={};
    const manual=options.mapping?.[sheet.name];
    function add(vals,row,notes=[]){const title=text(vals.title),work=text(vals.work),people=text(vals.people),originalDate=text(vals.date);if(![title,work,people,originalDate].some(Boolean))return;
-    const parsed=parseDate(vals.date,options.year);const warnings=[...notes,...(parsed.warning?[parsed.warning]:[])];for(const [name,v] of [['活动名称',title],['具体工作',work],['人员',people]])if(!v)warnings.push(name+'缺失');records.push({sheet:sheet.name,row,title,work,people,date:parsed.date,originalDate,warnings,include:!!(title&&work&&people&&parsed.date),category:'部门工作',location:'',notes:''});
+    const parsed=parseDate(vals.date,options.year);const warnings=[...notes,...(parsed.warning?[parsed.warning]:[])];for(const [name,v] of [['活动名称',title],['具体工作',work],['人员',people]])if(!v)warnings.push(name+'缺失');records.push({sheet:sheet.name,row,title,work,people,date:parsed.date,originalDate,warnings,include:!!(title&&work&&people&&parsed.date),category:text(vals.category)||'其他',location:'',notes:''});
    }
    function flushVertical(row){if(Object.keys(vertical).length>=3)add(vertical,row,['纵向字段表，请核对字段与人员对应关系']);vertical={};}
    for(let ri=0;ri<sheet.rows.length;ri++){
@@ -33,10 +33,10 @@
     const row=sheet.rows[ri]||[];if(!row.some(c=>text(c))){carry={title:'',date:null};flushVertical(ri);continue;}
     if(manual){if(ri+1<manual.startRow)continue;const vals={};for(const [k,c]of Object.entries(manual.columns))vals[k]=row[c];if(Object.values(vals).filter(v=>field(v)).length>=3)continue;add(vals,ri+1,['使用手动指定列']);continue;}
     const found={};row.forEach((c,i)=>{const k=field(c);if(k&&found[k]===undefined)found[k]=i;});
-    if(Object.keys(found).length>=3){flushVertical(ri);mapping=found;carry={title:'',date:null};continue;}
-    if(!mapping&&field(row[0])&&row.length>=2){const k=field(row[0]);if(vertical[k])flushVertical(ri);vertical[k]=row[1];if(Object.keys(vertical).length===4)flushVertical(ri+1);continue;}
+    if(['title','date','work','people'].filter(k=>found[k]!==undefined).length>=3){flushVertical(ri);mapping=found;carry={title:'',date:null};continue;}
+    if(!mapping&&field(row[0])&&row.length>=2){const k=field(row[0]);if(vertical[k])flushVertical(ri);vertical[k]=row[1];continue;}
     if(!mapping){skipped.push({sheet:sheet.name,row:ri+1,reason:'表头前的说明行或无法识别的内容'});continue;}
-    const vals={};for(const k of ['title','date','work','people'])vals[k]=mapping[k]===undefined?'':row[mapping[k]];
+    const vals={};for(const k of ['title','date','work','people','category'])vals[k]=mapping[k]===undefined?'':row[mapping[k]];
     const first=text(vals.title);if(/^(合计|总计|备注|说明|小计)([：:]|$)/.test(first)){skipped.push({sheet:sheet.name,row:ri+1,reason:'汇总或说明行'});carry={title:'',date:null};continue;}
     if(!text(vals.work)&&!text(vals.people)){skipped.push({sheet:sheet.name,row:ri+1,reason:'没有人员或工作内容的行'});carry={title:'',date:null};continue;}
     const warnings=[];if(!first&&carry.title){vals.title=carry.title;warnings.push('活动名沿用同一连续分组');}
