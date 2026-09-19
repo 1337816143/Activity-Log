@@ -67,7 +67,7 @@ with sync_playwright() as pw:
   q.locator('[name="category"]').select_option('其他');q.locator('[name="categoryCustom"]').fill('  ');q.locator('#save-record').click();expect(q.locator('#editor')).not_to_be_visible(timeout=120000)
   assert find_record(q,TAG+' custom')['category']=='其他'
   q.locator('#edit-record').click();q.locator('[name="categoryCustom"]').fill('<b>校友 & 企业</b>');q.locator('#save-record').click();expect(q.locator('#editor')).not_to_be_visible(timeout=120000)
-  q.locator('#search').fill(TAG+' custom');expect(q.locator('.category-chip')).to_have_text('<b>校友 & 企业</b>');assert q.locator('.category-chip b').count()==0
+  q.locator('#search').fill(TAG+' custom');expect(q.locator('.record-card')).to_have_count(1);expect(q.locator('.category-chip')).to_have_text('<b>校友 & 企业</b>');assert q.locator('.category-chip b').count()==0
   ok('Empty custom name remains Other; HTML-like names are treated as literal text, not injected markup')
   q.locator('#excel-open').click()
   csv='\ufeff活动名称,活动时间,参与具体工作,人员,活动类型\n'+TAG+' import,2025-09-18,整理,测试人员,校友访谈\n'+TAG+' import2,2025-09-18,宣传,测试人员,\n'
@@ -85,7 +85,7 @@ with sync_playwright() as pw:
   m.screenshot(path=str(OUT/'custom-category-mobile.png'),full_page=True)
   assert not errors,errors;ok('390px custom category form fits without horizontal overflow; no uncaught page exceptions')
  except Exception as e:
-  try:p.screenshot(path=str(OUT/'failure.png'),full_page=True)
+  try:pages[-1].screenshot(path=str(OUT/'failure.png'),full_page=True)
   except Exception:pass
   (OUT/'failure.json').write_text(json.dumps({'error':str(e),'passed':passed,'page_errors':errors},ensure_ascii=False,indent=2));raise
  finally:
