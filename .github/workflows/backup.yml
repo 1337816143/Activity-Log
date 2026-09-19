@@ -1,4 +1,4 @@
-# v2.2.0: archive restored examples and shared data; UI preference stays browser-local.
+# v2.2.1: archive activity type updates; UI preference stays browser-local.
 name: Archive shared activity records and attachments
 on:
   schedule:
